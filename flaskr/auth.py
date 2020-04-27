@@ -26,25 +26,26 @@ def register():
 			error = 'Password is required.'
 		elif db.execute('SELECT id FROM user WHERE username = ?', (username,)
 		).fetchone() is not None:
-			error = f'User {username} is already registered.'
+			error = 'User {} is already registered.'.format(username)
 
 		if error is None:
 			db.execute(
 				'INSERT INTO user (username, password) VALUES (?, ?)',
 				(username, generate_password_hash(password))
 			)
+			db.commit()
 			return redirect(url_for('auth.login'))
 
 		flash(error)
 
 	return render_template('auth/register.html')
 
-@bp.route('login', methods=('GET', 'POST'))
+@bp.route('/login', methods=('GET', 'POST'))
 def login():
 	if request.method == 'POST':
 		username = request.form['username']
 		password = request.form['password']
-		db = get_db()
+		db = get_db()	
 		error = None
 		user = db.execute(
 			'SELECT * FROM user WHERE username = ?', (username,)
@@ -62,7 +63,7 @@ def login():
 
 		flash(error)
 
-		return render_template('auth/login.html')
+	return render_template('auth/login.html')
 
 @bp.before_app_request
 def load_logged_in_user():
